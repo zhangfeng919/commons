@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>自助操作</title>
+<meta charset="UTF-8">
+<link rel="import" href="static/html/thirdplugins.html">
+</head>
+
+<body>
+	<div class="container">
+		<div class="row text-center">
+			<h1>根据数据库生成功能storm</h1>
+		</div>
+	</div>
+	<div class="container">
+		<!-- 数据库连接信息 -->
+		<div class="row">
+			<form role="form" id="db_form">
+				<div class="row form-group" style="margin-left: 0;margin-right: 0;">
+					<div class="form-group">
+						<label for="dbShortName" class="col-sm-2">数据库</label>
+						<div class="col-sm-4">
+							<select id="dbShortName" name="dbShortName" class="form-control"><option value="">选择数据库</option></select>
+						</div>
+					</div>
+				</div>
+
+				<div class="form-group">
+					<label for="dbName" class="col-sm-2">数据库名称</label>
+					<div class="col-sm-4">
+						<input type="text" class="form-control" id="dbName" name="dbName"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label for="dbType" class="col-sm-2">数据库类型</label>
+					<div class="col-sm-4">
+						<input type="text" class="form-control" id="dbType" name="dbType"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label for="dbIp" class="col-sm-2">数据库ip</label>
+					<div class="col-sm-4">
+						<input type="text" class="form-control" id="dbIp" name="dbIp"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label for="dbPort" class="col-sm-2">数据库端口</label>
+					<div class="col-sm-4">
+						<input type="text" class="form-control" id="dbPort" name="dbPort"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label for="dbUserName" class="col-sm-2">数据库用户名</label>
+					<div class="col-sm-4">
+						<input type="text" class="form-control" id="dbUserName" name="dbUserName"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label for="dbPassword" class="col-sm-2">数据库用户密码</label>
+					<div class="col-sm-4">
+						<input type="text" class="form-control" id="dbPassword" name="dbPassword"/>
+					</div>
+				</div>
+				<div class="form-group text-center">
+					<button id="testconnect" class="btn">测试连接</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</body>
+
+<script type="text/javascript">
+	/*
+	 * 初始化控件属性
+	 */
+	$(function() {
+		var obj = {};
+
+        var dbList = function(){
+            var url = "http://localhost/dbMap";
+            var data = {params:obj};
+            $.post(url, data, function(data){
+                data = JSON.parse(data);
+                $("#dbShortName").data(data);
+                var optionStr = "";
+                for(var name in data){
+                    optionStr += "<option value='"+name+"'>"+name+"</option>";
+                }
+                $("#dbShortName option").each(function(index){
+                    if(index > 0) {
+                        $(this).remove();
+                    }
+                });
+                $("#dbShortName").append(optionStr);
+            });
+        }
+
+        dbList();
+
+        $("#dbShortName").on("change",function () {
+            var obj = $(this).data($(this).val());
+            for(var pro in obj){
+                if(pro == 'dbShortName'){
+                    continue;
+				}
+                $("#"+pro).val(obj[pro]);
+			}
+        });
+
+		$("#testconnect").on("click",function(){
+			event.stopPropagation();//防止form提交
+			event.preventDefault();//防止form提交
+			var obj = {};
+			var nodeArr = $("#db_form").serializeArray();
+			for(var i in nodeArr){
+				if(nodeArr[i].value){
+				obj[nodeArr[i].name]= nodeArr[i].value;
+				}
+			}
+			obj = JSON.stringify(obj);
+			var url = "http://localhost/test";
+			var data = {params:obj};
+			$.post(url, data, function(data){
+                dbList();
+			});
+			
+			return false;//防止form提交
+		});
+		
+	});
+</script>
+
+</html>
